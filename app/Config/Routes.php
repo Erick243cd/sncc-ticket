@@ -7,7 +7,7 @@ $routes = Services::routes();
 
 // Load the system's routing file first, so that the app and ENVIRONMENT
 // can override as needed.
-if (is_file(SYSTEMPATH . 'Config/Routes.php')) {
+if (file_exists(SYSTEMPATH . 'Config/Routes.php')) {
     require SYSTEMPATH . 'Config/Routes.php';
 }
 
@@ -17,15 +17,11 @@ if (is_file(SYSTEMPATH . 'Config/Routes.php')) {
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
-$routes->setDefaultMethod('index');
+$routes->setDefaultController('Pages');
+$routes->setDefaultMethod('views');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
-// The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
-// where controller filters or CSRF protection are bypassed.
-// If you don't want to define all routes, please use the Auto Routing (Improved).
-// Set `$autoRoutesImproved` to true in `app/Config/Feature.php` and set the following to true.
-// $routes->setAutoRoute(false);
+$routes->setAutoRoute(true);
 
 /*
  * --------------------------------------------------------------------
@@ -35,7 +31,39 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Pages::views');
+$routes->get('pages', 'Pages::views/$1');
+
+$myroutes = [];
+
+$myroutes['dashboard'] = 'Pages::dashboard';
+$myroutes['login'] = 'Users::login';$myroutes['register'] = 'Users::register';
+$myroutes['signin'] = 'Users::login';$myroutes['signup'] = 'Users::register';
+$myroutes['logout'] = 'Users::logout';$myroutes['signout'] = 'Users::logout';
+$myroutes['logandbook'] = 'Bookings::logforbook';
+$myroutes['booktrip'] = 'Bookings::booknow';
+$myroutes['trips'] = 'Trips::index';
+$myroutes['profile'] = 'Users::myprofile';
+$myroutes['cities'] = 'Cities::index';
+$myroutes['airlines'] = 'Airlines::index';
+$myroutes['settings'] = 'Users::settings';
+$myroutes['booking-list'] = 'Bookings::listbooking';
+$myroutes['booking-trip'] = 'Bookings::index';
+$myroutes['programs-trips'] = 'Trips::searchOneaway';
+$myroutes['create-trip'] = 'Trips::create';
+
+$myroutes['viewTripDetails/(:segment)'] = 'Trips::viewmore/$1';
+$myroutes['admin-more-booking/(:segment)'] = 'Bookings::adminMore/$1';
+$myroutes['confirm-booking/(:segment)'] = 'Bookings::confirmBooking/$1';
+$myroutes['send-ticket/(:segment)'] = 'Bookings::confirmTicket/$1';
+$myroutes['cancel-booking/(:segment)'] = 'Bookings::cancelBooking/$1';
+$myroutes['booking-status/(:segment)'] = 'Bookings::bookingstatus/$1';
+
+$routes->set404Override(function(){
+    echo view('errors/err_404');
+});
+
+$routes->map($myroutes);
 
 /*
  * --------------------------------------------------------------------
@@ -50,6 +78,6 @@ $routes->get('/', 'Home::index');
  * You will have access to the $routes object within that file without
  * needing to reload it.
  */
-if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
+if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
     require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
 }
